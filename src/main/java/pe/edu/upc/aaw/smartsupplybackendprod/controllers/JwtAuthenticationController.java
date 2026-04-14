@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import pe.edu.upc.aaw.smartsupplybackendprod.entities.Usuario;
+import pe.edu.upc.aaw.smartsupplybackendprod.repositories.IUsuarioRepository;
 import pe.edu.upc.aaw.smartsupplybackendprod.security.JwtRequest;
 import pe.edu.upc.aaw.smartsupplybackendprod.security.JwtResponse;
 import pe.edu.upc.aaw.smartsupplybackendprod.security.JwtTokenUtil;
@@ -27,11 +29,15 @@ public class JwtAuthenticationController {
 	private JwtTokenUtil jwtTokenUtil;
 	@Autowired
 	private JwtUserDetailsService userDetailsService;
+	@Autowired
+	private IUsuarioRepository usuarioRepository;
 	@PostMapping("/authenticate")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
 		authenticate(authenticationRequest.getNameUsuario(), authenticationRequest.getPasswordUsuario());
 		final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getNameUsuario());
-		final String token = jwtTokenUtil.generateToken(userDetails);
+		Usuario usuario = usuarioRepository
+				.findByNameUsuario(authenticationRequest.getNameUsuario());
+		final String token = jwtTokenUtil.generateToken(userDetails,usuario);
 		return ResponseEntity.ok(new JwtResponse(token));
 	}
 	private void authenticate(String nameUsuario, String passwordUsuario) throws Exception {
